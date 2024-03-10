@@ -36,10 +36,10 @@ public class MainApplicationFrame extends JFrame
         
         
         LogWindow logWindow = createLogWindow();
-        addWindow(logWindow);
+        addWindow(logWindow, 300, 800);
 
         GameWindow gameWindow = new GameWindow(bundle.getString("gameWindow.title"));
-        addWindow(gameWindow);
+        addWindow(gameWindow, 400, 400);
 
         setJMenuBar(new MenuGenerator(this));
         setDefaultCloseOperation(EXIT_ON_CLOSE);
@@ -49,17 +49,17 @@ public class MainApplicationFrame extends JFrame
     {
         LogWindow logWindow = new LogWindow(bundle.getString("logWindow.title"), Logger.getDefaultLogSource());
         logWindow.setLocation(10,10);
-        logWindow.setSize(300, 800);
         setMinimumSize(logWindow.getSize());
         logWindow.pack();
         Logger.debug(bundle.getString("Logger.debug.strMessage.status"));
         return logWindow;
     }
     
-    protected void addWindow(JInternalFrame frame)
+    protected void addWindow(JInternalFrame frame, int width,  int height) 
     {
         desktopPane.add(frame);
         frame.setVisible(true);
+        frame.setSize(width, height);
     }
     
     protected void setLookAndFeel(String className)
