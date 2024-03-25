@@ -53,6 +53,7 @@ public class MenuGenerator extends JMenuBar{
         exitItem.addActionListener(event -> {
                 int option = JOptionPane.showConfirmDialog(null, "Подтверждение выхода", "Выход", JOptionPane.YES_NO_OPTION);
                 if (option == JOptionPane.YES_OPTION) {
+                    applicationFrame.saveState();
                     WindowEvent eventExit  = new WindowEvent(applicationFrame, WindowEvent.WINDOW_CLOSING);
                     Toolkit.getDefaultToolkit().getSystemEventQueue().postEvent(eventExit);
                 }
@@ -60,6 +61,7 @@ public class MenuGenerator extends JMenuBar{
         exitMenu.add(exitItem);
         return exitMenu;
     }
+    
     private JMenuItem createMenuItem(String text, int mnemonic, KeyStroke accelerator, ActionListener action) {
         JMenuItem menuItem = new JMenuItem(text, mnemonic);
         if (accelerator != null) {
