@@ -6,6 +6,7 @@ import java.awt.event.ActionListener;
 import java.awt.event.InputEvent;
 import java.awt.event.KeyEvent;
 import java.awt.event.WindowEvent;
+import java.beans.PropertyVetoException;
 import java.util.Locale;
 import java.util.ResourceBundle;
 import java.util.prefs.Preferences;
@@ -22,12 +23,7 @@ import javax.swing.UIManager;
 import javax.swing.UnsupportedLookAndFeelException;
 import log.Logger;
 
-/**
- * Что требуется сделать:
- * 1. Метод создания меню перегружен функционалом и трудно читается. 
- * Следует разделить его на серию более простых методов (или вообще выделить отдельный класс).
- *
- */
+
 public class MainApplicationFrame extends JFrame
 {
     private final ResourceBundle bundle = ResourceBundle.getBundle("resources", Locale.getDefault());
@@ -38,11 +34,13 @@ public class MainApplicationFrame extends JFrame
     protected static final String PREF_KEY_WINDOW_Y = "windowY_";
     protected static final String PREF_KEY_WINDOW_WIDTH = "windowWidth_";
     protected static final String PREF_KEY_WINDOW_HEIGHT = "windowHeight_";
+    protected static final String PREF_KEY_WINDOW_MAXIMIZED = "windowMaximized_";
+    protected static final String PREF_KEY_WINDOW_ICONIFIED = "windowIconified_";
     
-    public MainApplicationFrame() {
+    public MainApplicationFrame() throws PropertyVetoException {
         //Make the big window be indented 50 pixels from each edge
         //of the screen.
-        int inset = 50;        
+        int inset = 50;
         Dimension screenSize = Toolkit.getDefaultToolkit().getScreenSize();
         setBounds(inset, inset,
             screenSize.width  - inset*2,
@@ -60,8 +58,10 @@ public class MainApplicationFrame extends JFrame
         menuBar.add(generateLookAndFeelMenu());
         menuBar.add(generateTestMenu());
         menuBar.add(generateExitMenu());
+        setJMenuBar(menuBar);
         restoreState();
         setDefaultCloseOperation(EXIT_ON_CLOSE);
+
     }
     
     protected LogWindow createLogWindow()
@@ -82,10 +82,12 @@ public class MainApplicationFrame extends JFrame
             prefs.putInt(PREF_KEY_WINDOW_Y + i, frame.getY());
             prefs.putInt(PREF_KEY_WINDOW_WIDTH + i, frame.getWidth());
             prefs.putInt(PREF_KEY_WINDOW_HEIGHT + i, frame.getHeight());
+            prefs.putBoolean(PREF_KEY_WINDOW_MAXIMIZED + i, frame.isMaximum());
+            prefs.putBoolean(PREF_KEY_WINDOW_ICONIFIED + i, frame.isIcon());
         }
     }
 
-    private void restoreState() {
+    private void restoreState() throws PropertyVetoException {
         Preferences prefs = Preferences.userRoot().node(PREF_NODE);
         int windowCount = prefs.getInt(PREF_KEY_WINDOW_COUNT, 0);
         for (int i = 0; i < windowCount; i++) {
@@ -93,9 +95,10 @@ public class MainApplicationFrame extends JFrame
             int y = prefs.getInt(PREF_KEY_WINDOW_Y + i, 0);
             int width = prefs.getInt(PREF_KEY_WINDOW_WIDTH + i, 0);
             int height = prefs.getInt(PREF_KEY_WINDOW_HEIGHT + i, 0);
-            JInternalFrame frame = new GameWindow(bundle.getString("gameWindow.title"));
+            JInternalFrame frame = desktopPane.getAllFrames()[i];
             frame.setBounds(x, y, width, height);
-            addWindow(frame, width, height);
+            frame.setMaximum(prefs.getBoolean(PREF_KEY_WINDOW_MAXIMIZED + i, false));
+            frame.setIcon(prefs.getBoolean(PREF_KEY_WINDOW_ICONIFIED + i, false));
         }
     }
     protected void addWindow(JInternalFrame frame, int width,  int height) 
@@ -103,6 +106,7 @@ public class MainApplicationFrame extends JFrame
         desktopPane.add(frame);
         frame.setVisible(true);
         frame.setSize(width, height);
+        frame.setName(String.valueOf(desktopPane.getAllFrames().length));
     }
     
     protected void setLookAndFeel(String className)
@@ -151,6 +155,24 @@ public class MainApplicationFrame extends JFrame
         exitItem.addActionListener(event -> {
                 int option = JOptionPane.showConfirmDialog(null, "Подтверждение выхода", "Выход", JOptionPane.YES_NO_OPTION);
                 if (option == JOptionPane.YES_OPTION) {
+                    addWindowListener(new java.awt.event.WindowAdapter() {
+                        @Override
+                        public void windowClosing(WindowEvent e) {
+                            // Show a confirmation dialog to the user
+                            int option = JOptionPane.showConfirmDialog(null,
+                                    "Хотите сохранить состояние окон перед выходом?",
+                                    "Выход",
+                                    JOptionPane.YES_NO_OPTION,
+                                    JOptionPane.QUESTION_MESSAGE,
+                                    null);
+                            if (option == JOptionPane.NO_OPTION) {
+                                dispose();
+                            } else {
+                                saveState();
+                                dispose();
+                            }
+                        }
+                    });
                     WindowEvent eventExit  = new WindowEvent(this, WindowEvent.WINDOW_CLOSING);
                     Toolkit.getDefaultToolkit().getSystemEventQueue().postEvent(eventExit);
                 }
