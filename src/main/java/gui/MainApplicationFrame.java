@@ -37,6 +37,7 @@ public class MainApplicationFrame extends JFrame
     protected static final String PREF_KEY_WINDOW_MAXIMIZED = "windowMaximized_";
     protected static final String PREF_KEY_WINDOW_ICONIFIED = "windowIconified_";
     
+    
     public MainApplicationFrame() throws PropertyVetoException {
         //Make the big window be indented 50 pixels from each edge
         //of the screen.
@@ -48,11 +49,15 @@ public class MainApplicationFrame extends JFrame
 
         setContentPane(desktopPane);
 
+        CoordinatesWindow coordinatesWindow = new CoordinatesWindow();
+        addWindow(coordinatesWindow, 300, 100);
+        coordinatesWindow.setVisible(true);
+
         LogWindow logWindow = createLogWindow();
         addWindow(logWindow, 300, 800);
 
         GameWindow gameWindow = new GameWindow(bundle.getString("gameWindow.title"));
-        addWindow(gameWindow, 400, 400);
+        addWindow(gameWindow, 300, 300);
 
         JMenuBar menuBar = new JMenuBar();
         menuBar.add(generateLookAndFeelMenu());
