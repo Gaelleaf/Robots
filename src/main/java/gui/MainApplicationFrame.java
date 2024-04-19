@@ -27,6 +27,7 @@ import log.Logger;
 public class MainApplicationFrame extends JFrame
 {
     private final ResourceBundle bundle = ResourceBundle.getBundle("resources", Locale.getDefault());
+    private final GameLogic logic = new GameLogic();
     private final JDesktopPane desktopPane = new JDesktopPane();
     protected static final String PREF_NODE = "MyAppPrefs";
     protected static final String PREF_KEY_WINDOW_COUNT = "windowCount";
@@ -49,14 +50,14 @@ public class MainApplicationFrame extends JFrame
 
         setContentPane(desktopPane);
 
-        CoordinatesWindow coordinatesWindow = new CoordinatesWindow();
+        CoordinatesWindow coordinatesWindow = new CoordinatesWindow(logic);
         addWindow(coordinatesWindow, 300, 100);
         coordinatesWindow.setVisible(true);
 
         LogWindow logWindow = createLogWindow();
         addWindow(logWindow, 300, 800);
 
-        GameWindow gameWindow = new GameWindow(bundle.getString("gameWindow.title"));
+        GameWindow gameWindow = new GameWindow(bundle.getString("gameWindow.title"), logic);
         addWindow(gameWindow, 300, 300);
 
         JMenuBar menuBar = new JMenuBar();

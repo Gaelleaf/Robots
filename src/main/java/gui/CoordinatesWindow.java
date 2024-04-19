@@ -9,7 +9,7 @@ public class CoordinatesWindow extends JInternalFrame {
     private final JLabel label;
     private final Timer timer;
 
-    public CoordinatesWindow() {
+    public CoordinatesWindow(GameLogic logic) {
         super("Robot Coordinates", true, true, true, true);
         setSize(300, 300);
         setLocation(10, 10);
@@ -21,8 +21,8 @@ public class CoordinatesWindow extends JInternalFrame {
         setContentPane(panel);
 
         timer = new Timer(1, e -> {
-            double x = GameVisualizer.getRobotX();
-            double y = GameVisualizer.getRobotY();
+            double x = logic.getRobot().getPosition().getX();
+            double y = logic.getRobot().getPosition().getY();
             label.setText("Robot coordinates: (" + x + ", " + y + ")");
         });
         timer.start();
